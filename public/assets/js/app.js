@@ -14,7 +14,17 @@
     var v = UI[key];
     return (typeof v === 'string' && v.trim()) ? v : fallback;
   }
-  var STATUSES = ['참석', '불참', '미정'];
+  var OTHER = '기타';
+  // config.js 의 statuses 를 그대로 씁니다. (없으면 최소 형태로 대체)
+  var STATUSES = (Array.isArray(CFG.statuses) && CFG.statuses.length ? CFG.statuses : [
+    { value: '참석', label: '참석', emoji: '🙋', counts: true },
+    { value: '불참', label: '불참', emoji: '🙇', counts: false }
+  ]).map(function (s, i) { s.idx = i; return s; });
+
+  function statusMeta(value) {
+    for (var i = 0; i < STATUSES.length; i++) if (STATUSES[i].value === value) return STATUSES[i];
+    return { value: value, label: T('statusOther', OTHER), emoji: '📝', idx: -1, counts: false };
+  }
   var ME_KEY = 'reunion:myName';
 
   /* ── 1. config.js 값을 화면에 채우기 ─────────────────── */
@@ -34,6 +44,8 @@
 
     applyHeroImage();
     renderSchedule();
+    buildChoices();
+    buildFilters();
 
     if (Array.isArray(CFG.greeting)) $('greeting').textContent = CFG.greeting.join('\n');
     else if (CFG.greeting) $('greeting').textContent = CFG.greeting;
@@ -53,6 +65,71 @@
 
   function linkOrHide(el, url) {
     if (url) el.href = url; else el.hidden = true;
+  }
+
+  /** 참석 여부 선택 버튼을 config.js 의 statuses 로 만듭니다. */
+  function buildChoices() {
+    var row = $('statusRow');
+    row.innerHTML = '';
+    STATUSES.forEach(function (s, i) {
+      var label = document.createElement('label');
+      label.className = 'choice';
+
+      var input = document.createElement('input');
+      input.type = 'radio';
+      input.name = 'status';
+      input.value = s.value;
+      if (i === 0) input.required = true;
+
+      var box = document.createElement('span');
+      box.className = 'choice__box st-' + i;
+
+      var emoji = document.createElement('span');
+      emoji.className = 'choice__emoji';
+      emoji.setAttribute('aria-hidden', 'true');
+      emoji.textContent = s.emoji || '•';
+
+      var name = document.createElement('span');
+      name.className = 'choice__name';
+      name.textContent = s.label || s.value;
+
+      box.appendChild(emoji);
+      box.appendChild(name);
+      if (s.time) {
+        var time = document.createElement('span');
+        time.className = 'choice__time';
+        time.textContent = s.time;
+        box.appendChild(time);
+      }
+
+      label.appendChild(input);
+      label.appendChild(box);
+      row.appendChild(label);
+    });
+  }
+
+  /** 명단 필터 칩 만들기 */
+  function buildFilters() {
+    var wrap = $('filters');
+    wrap.innerHTML = '';
+    var items = [{ value: '전체', label: T('filterAll', '전체') }].concat(
+      STATUSES.map(function (s) { return { value: s.value, label: s.label || s.value }; })
+    );
+
+    items.forEach(function (item, i) {
+      var chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'chip' + (i === 0 ? ' is-on' : '');
+      chip.dataset.filter = item.value;
+      chip.textContent = item.label;
+      chip.addEventListener('click', function () {
+        wrap.querySelectorAll('.chip').forEach(function (c) { c.classList.remove('is-on'); });
+        chip.classList.add('is-on');
+        state.filter = item.value;
+        renderList();
+      });
+      wrap.appendChild(chip);
+    });
   }
 
   /** 하루 일정표. config.js 의 schedule 이 비어 있으면 섹션째 감춥니다. */
@@ -196,7 +273,7 @@
       var message = messageEl.value.trim();
 
       if (name.length < 1) { say(msg, T('errName', '이름을 입력해 주세요.'), 'is-err'); $('name').focus(); return; }
-      if (!checked) { say(msg, T('errStatus', '참석 여부를 선택해 주세요.'), 'is-err'); return; }
+      if (!checked) { say(msg, T('errStatusPick', T('errStatus', '참석 여부를 선택해 주세요.')), 'is-err'); return; }
 
       btn.disabled = true;
       btn.textContent = T('submitting', '보내는 중…');
@@ -263,9 +340,43 @@
   }
 
   function renderCounts(counts) {
-    $('cntYes').textContent = counts['참석'] || 0;
-    $('cntNo').textContent = counts['불참'] || 0;
-    $('cntMaybe').textContent = counts['미정'] || 0;
+    var wrap = $('counts');
+    wrap.innerHTML = '';
+
+    var shown = STATUSES.slice();
+    if (counts[OTHER]) shown.push({ value: OTHER, label: T('statusOther', OTHER), idx: -1 });
+
+    shown.forEach(function (s) {
+      var li = document.createElement('li');
+      li.className = 'count st-' + (s.idx >= 0 ? s.idx : 'other');
+      var n = document.createElement('strong');
+      n.textContent = counts[s.value] || 0;
+      var t2 = document.createElement('span');
+      t2.textContent = s.label || s.value;
+      li.appendChild(n);
+      li.appendChild(t2);
+      wrap.appendChild(li);
+    });
+
+    renderStages(counts);
+  }
+
+  /**
+   * 시간대별 예상 인원.
+   * 일찍 오는 사람은 뒤 순서에도 있으므로 누적해서 보여줍니다.
+   * (축구부터 온 사람은 저녁·뒷풀이에도 있다고 봅니다)
+   */
+  function renderStages(counts) {
+    var joining = STATUSES.filter(function (s) { return s.counts; });
+    if (joining.length < 2) { $('stages').textContent = ''; return; }
+
+    var running = 0;
+    var parts = joining.map(function (s) {
+      running += counts[s.value] || 0;
+      return (s.label || s.value) + ' ' + running + '명';
+    });
+
+    $('stages').textContent = T('stageSummary', '시간대별 예상 인원') + ' · ' + parts.join(' → ');
   }
 
   function renderList() {
@@ -285,8 +396,11 @@
     }
 
     rows.forEach(function (p) {
+      var meta = statusMeta(p.status);
+      var cls = 'st-' + (meta.idx >= 0 ? meta.idx : 'other');
+
       var li = document.createElement('li');
-      li.className = 'person person--' + p.status + (me && me === p.name ? ' is-me' : '');
+      li.className = 'person ' + cls + (me && me === p.name ? ' is-me' : '');
 
       var body = document.createElement('div');
       body.className = 'person__body';
@@ -299,8 +413,8 @@
       name.textContent = p.name;
 
       var tag = document.createElement('span');
-      tag.className = 'person__tag person__tag--' + p.status;
-      tag.textContent = p.status;
+      tag.className = 'person__tag ' + cls;
+      tag.textContent = meta.label || p.status;
 
       top.appendChild(name);
       top.appendChild(tag);
@@ -325,15 +439,6 @@
   }
 
   function setupList() {
-    document.querySelectorAll('.chip').forEach(function (chip) {
-      chip.addEventListener('click', function () {
-        document.querySelectorAll('.chip').forEach(function (c) { c.classList.remove('is-on'); });
-        chip.classList.add('is-on');
-        state.filter = chip.dataset.filter;
-        renderList();
-      });
-    });
-
     $('refreshBtn').addEventListener('click', loadAttendees);
 
     // 자동 새로고침: 화면이 보이는 동안에만 돌립니다.

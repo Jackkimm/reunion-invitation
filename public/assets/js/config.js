@@ -26,6 +26,21 @@ window.CONFIG = {
   fee: '5만원',
   feeDetail: '농협 352-10340685-53 (예금주: 김제균)',
 
+  /* ── 참석 여부 선택지 ───────────────────────────
+   * value    : 노션 DB "참석여부"(선택) 에 저장되는 값 ★ 노션 옵션과 똑같아야 합니다
+   * label    : 화면에 보이는 이름
+   * time     : 라벨 아래 작은 글씨 (없으면 '')
+   * counts   : true 면 "참석"으로 세고, false 면 불참으로 봅니다
+   * 순서대로 화면에 나오고, 앞쪽일수록 일찍 오는 사람입니다.
+   * ⚠️ value 를 고치면 functions/api/_notion.js 의 STATUSES 도 같이 고쳐야 합니다.
+   */
+  statuses: [
+    { value: '축구부터',   label: '축구부터',    time: '15:00~',  emoji: '⚽', counts: true },
+    { value: '저녁부터',   label: '저녁식사부터', time: '19:00~',  emoji: '🍚', counts: true },
+    { value: '뒷풀이부터', label: '뒷풀이부터',   time: '21:30~',  emoji: '🍻', counts: true },
+    { value: '불참',       label: '불참',        time: '',        emoji: '🙇', counts: false }
+  ],
+
   /* ── 하루 일정 ─────────────────────────────────
    * 줄을 추가·삭제하면 화면의 일정표가 그대로 바뀝니다.
    * note 는 괄호로 덧붙는 작은 글씨입니다. (없으면 생략 가능)
@@ -108,9 +123,15 @@ window.CONFIG = {
     /* 참석 투표 */
     rsvpTitle: '참석 투표',
     rsvpDesc: '로그인 없이 이름만 적으면 됩니다. 같은 이름으로 다시 보내면 답변이 수정돼요.',
+    errStatusPick: '어느 순서부터 오실지 골라주세요.',
     nameLabel: '이름',
     namePlaceholder: '예) 김제균 (3반)',
-    statusLabel: '참석 여부',
+    statusLabel: '어느 순서부터 오시나요?',
+    stageSummary: '시간대별 예상 인원',
+    stageFootball: '축구',
+    stageDinner: '저녁',
+    stageAfter: '뒷풀이',
+    statusOther: '기타',
     messageLabel: '한마디',
     messageOptional: '(선택)',
     messagePlaceholder: '다들 보고싶다! 늦게라도 갈게~',

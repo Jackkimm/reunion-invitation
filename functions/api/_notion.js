@@ -14,7 +14,13 @@
  */
 
 export const NOTION_VERSION = '2022-06-28';
-export const STATUSES = ['참석', '불참', '미정'];
+/**
+ * 참석 여부로 저장할 수 있는 값.
+ * ⚠️ public/assets/js/config.js 의 statuses[].value 와 똑같이 맞춰야 합니다.
+ * 이 목록에 없는 값이 노션에 들어 있으면(예전 응답 등) 화면에는 "기타" 로 보입니다.
+ */
+export const STATUSES = ['축구부터', '저녁부터', '뒷풀이부터', '불참'];
+export const STATUS_OTHER = '기타';
 
 export const MAX_NAME = 30;
 export const MAX_MESSAGE = 200;
@@ -187,7 +193,7 @@ export function toAttendee(page, props) {
   const name = plainText(p[props.name] && p[props.name].title);
   const cell = p[props.status] || {};
   const chosen = cell.select || cell.status;   // 선택(Select) / 상태(Status) 둘 다 지원
-  const status = chosen && STATUSES.includes(chosen.name) ? chosen.name : '미정';
+  const status = chosen && STATUSES.includes(chosen.name) ? chosen.name : STATUS_OTHER;
   const message = plainText(p[props.message] && p[props.message].rich_text);
 
   return {

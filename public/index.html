@@ -129,21 +129,9 @@
       </label>
 
       <fieldset class="choices">
-        <legend class="field__label" data-ui="statusLabel">참석 여부</legend>
-        <div class="choices__row" id="statusRow">
-          <label class="choice choice--yes">
-            <input type="radio" name="status" value="참석" required>
-            <span class="choice__box"><span class="choice__emoji" aria-hidden="true">🙋</span>참석</span>
-          </label>
-          <label class="choice choice--no">
-            <input type="radio" name="status" value="불참">
-            <span class="choice__box"><span class="choice__emoji" aria-hidden="true">🙇</span>불참</span>
-          </label>
-          <label class="choice choice--maybe">
-            <input type="radio" name="status" value="미정">
-            <span class="choice__box"><span class="choice__emoji" aria-hidden="true">🤔</span>미정</span>
-          </label>
-        </div>
+        <legend class="field__label" data-ui="statusLabel">어느 순서부터 오시나요?</legend>
+        <!-- 선택지는 config.js 의 statuses 로 만들어집니다 -->
+        <div class="choices__row" id="statusRow"></div>
       </fieldset>
 
       <label class="field">
@@ -164,19 +152,11 @@
   <section class="section" id="list">
     <h2 class="section__title" data-ui="listTitle">참석자 명단</h2>
 
-    <ul class="counts" id="counts">
-      <li class="count count--yes"><strong id="cntYes">–</strong><span>참석</span></li>
-      <li class="count count--no"><strong id="cntNo">–</strong><span>불참</span></li>
-      <li class="count count--maybe"><strong id="cntMaybe">–</strong><span>미정</span></li>
-    </ul>
+    <ul class="counts" id="counts"></ul>
+    <p class="stages" id="stages"></p>
 
     <div class="list__bar">
-      <div class="filters" role="group" aria-label="명단 필터">
-        <button class="chip is-on" data-filter="전체" type="button" data-ui="filterAll">전체</button>
-        <button class="chip" data-filter="참석" type="button">참석</button>
-        <button class="chip" data-filter="불참" type="button">불참</button>
-        <button class="chip" data-filter="미정" type="button">미정</button>
-      </div>
+      <div class="filters" role="group" aria-label="명단 필터" id="filters"></div>
       <button class="refresh" id="refreshBtn" type="button" aria-label="명단 새로고침" data-ui="refresh">↻ 새로고침</button>
     </div>
 

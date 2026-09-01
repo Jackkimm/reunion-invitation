@@ -23,7 +23,7 @@ export async function onRequestPost({ request, env }) {
 
     if (!name) throw new HttpError(400, '이름을 입력해 주세요.');
     if (!STATUSES.includes(status)) {
-      throw new HttpError(400, '참석 여부는 참석 / 불참 / 미정 중에서 선택해 주세요.');
+      throw new HttpError(400, `참석 여부는 ${STATUSES.join(' / ')} 중에서 골라주세요.`);
     }
     if (String(body.message || '').length > MAX_MESSAGE * 2) {
       throw new HttpError(400, `한마디는 ${MAX_MESSAGE}자까지 쓸 수 있습니다.`);

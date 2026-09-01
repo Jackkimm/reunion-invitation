@@ -9,7 +9,7 @@
  *   "attendees": [ { "name":"김한빛", "status":"참석", "message":"보고싶다", "updatedAt":"..." } ]
  * }
  */
-import { readEnv, resolveProps, queryAll, toAttendee, json, fail, STATUSES } from './_notion.js';
+import { readEnv, resolveProps, queryAll, toAttendee, json, fail, STATUSES, STATUS_OTHER } from './_notion.js';
 
 export async function onRequestGet({ env }) {
   try {
@@ -26,8 +26,8 @@ export async function onRequestGet({ env }) {
       .map(({ id, ...rest }) => rest);       // Notion 페이지 ID 는 내보내지 않습니다
 
     const counts = { total: attendees.length };
-    STATUSES.forEach((s) => { counts[s] = 0; });
-    attendees.forEach((a) => { counts[a.status] += 1; });
+    STATUSES.concat(STATUS_OTHER).forEach((s) => { counts[s] = 0; });
+    attendees.forEach((a) => { counts[a.status] = (counts[a.status] || 0) + 1; });
 
     return json({ ok: true, counts, attendees });
   } catch (err) {
