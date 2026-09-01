@@ -33,6 +33,7 @@
     });
 
     applyHeroImage();
+    renderSchedule();
 
     if (Array.isArray(CFG.greeting)) $('greeting').textContent = CFG.greeting.join('\n');
     else if (CFG.greeting) $('greeting').textContent = CFG.greeting;
@@ -52,6 +53,47 @@
 
   function linkOrHide(el, url) {
     if (url) el.href = url; else el.hidden = true;
+  }
+
+  /** 하루 일정표. config.js 의 schedule 이 비어 있으면 섹션째 감춥니다. */
+  function renderSchedule() {
+    var rows = Array.isArray(CFG.schedule) ? CFG.schedule : [];
+    if (!rows.length) return;
+
+    var list = $('timeline');
+    rows.forEach(function (row) {
+      if (!row || (!row.time && !row.title)) return;
+
+      var li = document.createElement('li');
+      li.className = 'tl';
+
+      var dot = document.createElement('span');
+      dot.className = 'tl__dot';
+      dot.setAttribute('aria-hidden', 'true');
+      li.appendChild(dot);
+
+      if (row.time) {
+        var time = document.createElement('p');
+        time.className = 'tl__time';
+        time.textContent = row.time;
+        li.appendChild(time);
+      }
+
+      var title = document.createElement('p');
+      title.className = 'tl__title';
+      title.textContent = row.title || '';
+      if (row.note) {
+        var note = document.createElement('em');
+        note.className = 'tl__note';
+        note.textContent = row.note;
+        title.appendChild(document.createTextNode(' '));
+        title.appendChild(note);
+      }
+      li.appendChild(title);
+      list.appendChild(li);
+    });
+
+    if (list.children.length) $('schedule').hidden = false;
   }
 
   /**

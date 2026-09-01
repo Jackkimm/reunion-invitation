@@ -6,6 +6,7 @@
   --ink:#1c1b18;              /* 먹빛 - 제목·본문 */
   --ink-2:#3a3833;
   --paper:#f7f3ea;            /* 종이색 - 히어로 배경 */
+  --paper-card:#ffffff;
   --gold:#96773c;
   --gold-soft:#b99a5e;
   --cream:#fbf8f3;
@@ -147,6 +148,35 @@ button,input,textarea{font:inherit;color:inherit;}
 .info__label{font-size:12px;letter-spacing:.12em;color:var(--gold);font-weight:700;}
 .info__value{font-size:17px;font-weight:500;margin-top:2px;}
 .info__sub{font-size:14px;color:var(--ink-soft);margin-top:3px;}
+
+/* ── 하루 일정(타임라인) ────────────────────────────────── */
+.timeline{
+  list-style:none;                /* ol 기본 번호 숨김 - 점 표시를 씁니다 */
+  position:relative;margin-top:24px;padding:22px 18px 22px 20px;
+  background:var(--paper-card,#fff);border:1px solid var(--line);
+  border-radius:var(--radius);box-shadow:var(--shadow);
+}
+.timeline::before{               /* 세로선 */
+  content:"";position:absolute;left:25px;top:34px;bottom:34px;
+  width:1px;background:var(--line);
+}
+.tl{position:relative;padding:0 0 20px 24px;}
+.tl:last-child{padding-bottom:0;}
+.tl__dot{
+  position:absolute;left:-1px;top:6px;width:11px;height:11px;
+  border-radius:50%;background:var(--paper);border:2px solid var(--gold);
+}
+.tl:last-child .tl__dot{background:var(--gold);}
+.tl__time{
+  font-size:13px;font-weight:700;letter-spacing:.02em;color:var(--gold);
+  font-variant-numeric:tabular-nums;
+}
+.tl__title{font-size:16px;font-weight:500;margin-top:2px;color:var(--ink);}
+.tl__note{
+  font-style:normal;font-size:12px;color:var(--ink-soft);
+  background:#f4f1e9;border-radius:999px;padding:2px 8px;
+  white-space:nowrap;
+}
 
 /* ── 버튼 ───────────────────────────────────────────────── */
 .btn{
