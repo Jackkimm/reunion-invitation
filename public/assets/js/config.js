@@ -58,7 +58,7 @@ window.CONFIG = {
   heroImage: '/assets/img/hero.jpg',
   heroImageStyle: 'plate',
   heroOverlay: 0.72,
-  heroImageAlt: '서예 이미지',
+  heroImageAlt: '이선승지(以善勝之) 서예',
 
   /* ── 참석 투표 마감(선택) ───────────────────────
    * 마감일을 지정하면 그 이후에는 투표 버튼이 잠깁니다.
