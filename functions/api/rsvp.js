@@ -6,7 +6,7 @@
  * 응답: { ok:true, updated:true|false, attendee:{...} }
  */
 import {
-  readEnv, notion, queryAll, toAttendee, normalizeName,
+  readEnv, resolveProps, notion, queryAll, toAttendee, normalizeName,
   cleanName, cleanMessage, json, fail, HttpError, STATUSES, MAX_MESSAGE
 } from './_notion.js';
 
@@ -29,8 +29,9 @@ export async function onRequestPost({ request, env }) {
       throw new HttpError(400, `한마디는 ${MAX_MESSAGE}자까지 쓸 수 있습니다.`);
     }
 
-    const existing = await findByName(cfg, name);
-    const properties = buildProperties(cfg.props, name, status, message);
+    const props = await resolveProps(cfg);
+    const existing = await findByName(cfg, props, name);
+    const properties = buildProperties(props, name, status, message);
 
     let page;
     if (existing) {
@@ -45,7 +46,7 @@ export async function onRequestPost({ request, env }) {
       });
     }
 
-    const { id, ...attendee } = toAttendee(page, cfg.props);
+    const { id, ...attendee } = toAttendee(page, props);
     return json({ ok: true, updated: Boolean(existing), attendee });
   } catch (err) {
     return fail(err);
@@ -57,22 +58,27 @@ export async function onRequestPost({ request, env }) {
  * 1) Notion 필터로 정확히 일치하는 이름을 먼저 찾고
  * 2) 없으면 전체를 훑어 공백·대소문자만 다른 이름("김 한빛" 등)까지 같은 사람으로 봅니다.
  */
-async function findByName(cfg, name) {
+async function findByName(cfg, props, name) {
   const exact = await queryAll(cfg, {
-    filter: { property: cfg.props.name, title: { equals: name } },
+    filter: { property: props.name, title: { equals: name } },
     page_size: 10
   });
   if (exact.length) return exact[0];
 
   const key = normalizeName(name);
   const all = await queryAll(cfg, {});
-  return all.find((row) => normalizeName(toAttendee(row, cfg.props).name) === key) || null;
+  return all.find((row) => normalizeName(toAttendee(row, props).name) === key) || null;
 }
 
 function buildProperties(props, name, status, message) {
+  // 참석여부를 선택(Select) 이 아니라 상태(Status) 로 만들었어도 저장되도록 모양을 맞춥니다.
+  const statusCell = props.statusType === 'status'
+    ? { status: { name: status } }
+    : { select: { name: status } };
+
   return {
     [props.name]: { title: [{ text: { content: name } }] },
-    [props.status]: { select: { name: status } },
+    [props.status]: statusCell,
     [props.message]: { rich_text: message ? [{ text: { content: message } }] : [] }
   };
 }

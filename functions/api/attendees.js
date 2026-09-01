@@ -9,18 +9,19 @@
  *   "attendees": [ { "name":"김한빛", "status":"참석", "message":"보고싶다", "updatedAt":"..." } ]
  * }
  */
-import { readEnv, queryAll, toAttendee, json, fail, STATUSES } from './_notion.js';
+import { readEnv, resolveProps, queryAll, toAttendee, json, fail, STATUSES } from './_notion.js';
 
 export async function onRequestGet({ env }) {
   try {
     const cfg = readEnv(env);
+    const props = await resolveProps(cfg);
 
     const rows = await queryAll(cfg, {
       sorts: [{ timestamp: 'last_edited_time', direction: 'descending' }]
     });
 
     const attendees = rows
-      .map((row) => toAttendee(row, cfg.props))
+      .map((row) => toAttendee(row, props))
       .filter((a) => a.name)                 // 이름이 빈 행은 명단에서 제외
       .map(({ id, ...rest }) => rest);       // Notion 페이지 ID 는 내보내지 않습니다
 

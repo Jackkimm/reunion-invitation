@@ -117,12 +117,77 @@ export async function queryAll(cfg, body = {}) {
   return rows;
 }
 
+/** 속성 종류를 한국어로 (오류 안내에 씁니다) */
+const TYPE_KO = {
+  title: '제목', select: '선택', status: '상태', rich_text: '텍스트',
+  multi_select: '다중 선택', number: '숫자', date: '날짜', checkbox: '체크박스',
+  people: '사람', files: '파일', url: 'URL', email: '이메일', phone_number: '전화번호'
+};
+
+/**
+ * DB 의 실제 속성 이름을 찾아냅니다.
+ * ─────────────────────────────────────────────
+ * 사람이 만든 표라서 이름이 조금씩 다를 수 있으므로 이렇게 찾습니다.
+ *   1) 이름이 정확히(공백·대소문자 무시) 같고 종류도 맞는 속성
+ *   2) 없으면, 그 종류의 속성이 DB 에 딱 하나뿐일 때 그것을 씁니다
+ *      (예: "참석여부" 대신 "상태" 라고 지어도 선택 속성이 하나뿐이면 인식)
+ * 그래도 못 찾으면 "무엇이 없고 무엇이 있는지" 를 적어 오류를 냅니다.
+ *
+ * "참석여부" 는 선택(Select) 뿐 아니라 상태(Status) 로 만들었어도 동작합니다.
+ */
+export async function resolveProps(cfg) {
+  const db = await notion(cfg, `/databases/${cfg.dbId}`);
+  const entries = Object.entries(db.properties || {})
+    .map(([name, prop]) => ({ name, type: prop.type }));
+
+  const pick = (wanted, types) => {
+    const exact = entries.find((e) => types.includes(e.type) && sameKey(e.name, wanted));
+    if (exact) return exact;
+    const sameType = entries.filter((e) => types.includes(e.type));
+    return sameType.length === 1 ? sameType[0] : null;   // 후보가 하나뿐일 때만 자동 인식
+  };
+
+  const found = {
+    name: pick(cfg.props.name, ['title']),
+    status: pick(cfg.props.status, ['select', 'status']),
+    message: pick(cfg.props.message, ['rich_text'])
+  };
+
+  const missing = [];
+  if (!found.name) missing.push(`${cfg.props.name}(제목)`);
+  if (!found.status) missing.push(`${cfg.props.status}(선택)`);
+  if (!found.message) missing.push(`${cfg.props.message}(텍스트)`);
+
+  if (missing.length) {
+    const have = entries.length
+      ? entries.map((e) => `${e.name}(${TYPE_KO[e.type] || e.type})`).join(', ')
+      : '(속성이 하나도 없습니다)';
+    throw new HttpError(400,
+      `Notion DB 에 이 속성이 없습니다 → ${missing.join(', ')} / ` +
+      `지금 DB 에 있는 속성 → ${have} / ` +
+      '노션에서 표 오른쪽 끝 + 버튼으로 속성을 추가하거나, 이름을 위와 똑같이 바꿔주세요.');
+  }
+
+  return {
+    name: found.name.name,
+    status: found.status.name,
+    statusType: found.status.type,   // 'select' 또는 'status'
+    message: found.message.name
+  };
+}
+
+/** 공백·대소문자를 무시하고 이름이 같은지 ("참석 여부" == "참석여부") */
+function sameKey(a, b) {
+  return String(a).replace(/\s+/g, '').toLowerCase() === String(b).replace(/\s+/g, '').toLowerCase();
+}
+
 /** Notion 페이지(행) 하나를 화면에서 쓰기 좋은 형태로 변환 */
 export function toAttendee(page, props) {
   const p = page.properties || {};
   const name = plainText(p[props.name] && p[props.name].title);
-  const select = p[props.status] && p[props.status].select;
-  const status = select && STATUSES.includes(select.name) ? select.name : '미정';
+  const cell = p[props.status] || {};
+  const chosen = cell.select || cell.status;   // 선택(Select) / 상태(Status) 둘 다 지원
+  const status = chosen && STATUSES.includes(chosen.name) ? chosen.name : '미정';
   const message = plainText(p[props.message] && p[props.message].rich_text);
 
   return {
