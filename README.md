@@ -301,7 +301,7 @@ Executing user deploy command: npx wrangler deploy
 }
 ```
 
-- 최근에 응답/수정한 사람이 위로 옵니다.
+- 응답은 최근에 수정한 순서로 돌려주고, **화면에는 이름 가나다순으로 정렬**해서 보여줍니다.
 - `이름`이 비어 있는 행은 명단에서 빠집니다.
 
 ### `POST /api/rsvp`

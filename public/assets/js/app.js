@@ -317,6 +317,20 @@
   /* ── 4. 참석자 명단 ───────────────────────────────────── */
   var state = { list: [], filter: '전체' };
 
+  /* 이름 가나다순 정렬용. 한글 자모 순서를 제대로 따르고,
+     "김한빛 2" 처럼 숫자가 섞여도 사람이 보기 좋은 순서가 됩니다. */
+  var collator = (function () {
+    try {
+      return new Intl.Collator('ko-KR', { numeric: true, sensitivity: 'base' });
+    } catch (e) {
+      return { compare: function (a, b) { return a < b ? -1 : (a > b ? 1 : 0); } };
+    }
+  })();
+
+  function byName(a, b) {
+    return collator.compare(a.name || '', b.name || '');
+  }
+
   function loadAttendees() {
     var btn = $('refreshBtn');
     btn.classList.add('is-loading');
@@ -325,7 +339,7 @@
       .then(readJson)
       .then(function (data) {
         if (!data.ok) throw new Error(data.error || '명단을 불러오지 못했습니다.');
-        state.list = data.attendees || [];
+        state.list = (data.attendees || []).slice().sort(byName);   // 가나다순
         renderCounts(data.counts || {});
         renderList();
         $('listUpdated').textContent = T('updatedPrefix', '마지막 업데이트') + ' ' + timeText(new Date());
