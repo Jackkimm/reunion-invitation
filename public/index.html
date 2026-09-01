@@ -92,6 +92,12 @@
           <p class="info__value" data-cfg="fee"></p>
           <!-- 참석 시점별 회비는 config.js 의 statuses[].fee 로 만들어집니다 -->
           <ul class="fees" id="fees"></ul>
+          <!-- 계좌 + 복사 버튼은 config.js 의 account 로 만들어집니다 -->
+          <p class="account" id="account" hidden>
+            <span class="account__text" id="accountText"></span>
+            <button class="copy" type="button" id="copyAccount">복사</button>
+          </p>
+          <span class="account__msg" id="copyMsg" role="status" aria-live="polite"></span>
           <p class="info__sub" data-cfg="feeDetail"></p>
         </div>
       </li>
@@ -169,7 +175,7 @@
 </main>
 
 <footer class="footer">
-  <p data-cfg="hostLine"></p>
+  <p data-cfg="footerLine"></p>
   <p class="footer__small" data-ui="footerNote">이 초대장은 참석 집계 용도로만 사용되며, 남기신 이름과 한마디는 명단에 공개됩니다.</p>
 </footer>
 

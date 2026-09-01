@@ -75,6 +75,7 @@
     buildChoices();
     buildFilters();
     renderFees();
+    renderAccount();
 
     if (Array.isArray(CFG.greeting)) $('greeting').textContent = CFG.greeting.join('\n');
     else if (CFG.greeting) $('greeting').textContent = CFG.greeting;
@@ -157,6 +158,75 @@
       li.appendChild(amount);
       list.appendChild(li);
     });
+  }
+
+  /**
+   * 계좌 + 복사 버튼.
+   * 클립보드 API 가 막힌 환경(오래된 인앱 브라우저 등)을 위해
+   * 눈에 안 보이는 입력칸을 만들어 복사하는 방법도 함께 씁니다.
+   */
+  function renderAccount() {
+    var acc = CFG.account || {};
+    var number = (acc.number || '').trim();
+    var box = $('account');
+    if (!box) return;
+    if (!number) { box.remove(); return; }
+
+    var parts = [];
+    if (acc.bank) parts.push(acc.bank);
+    parts.push(number);
+    var text = parts.join(' ');
+    if (acc.holder) text += ' (' + T('accountHolder', '예금주') + ': ' + acc.holder + ')';
+
+    $('accountText').textContent = text;
+    box.hidden = false;
+
+    var btn = $('copyAccount');
+    btn.textContent = T('copy', '복사');
+    btn.addEventListener('click', function () {
+      copyText(number).then(function (okCopy) {
+        if (okCopy) {
+          btn.textContent = T('copied', '복사됐어요');
+          btn.classList.add('is-done');
+          say($('copyMsg'), T('copied', '복사됐어요'), 'is-ok');
+          setTimeout(function () {
+            btn.textContent = T('copy', '복사');
+            btn.classList.remove('is-done');
+            say($('copyMsg'), '', '');
+          }, 1800);
+        } else {
+          say($('copyMsg'), T('copyFail', '복사하지 못했어요.'), 'is-err');
+        }
+      });
+    });
+  }
+
+  /** 계좌번호 복사. 되면 true */
+  function copyText(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text)
+        .then(function () { return true; })
+        .catch(function () { return legacyCopy(text); });
+    }
+    return Promise.resolve(legacyCopy(text));
+  }
+
+  function legacyCopy(text) {
+    try {
+      var area = document.createElement('textarea');
+      area.value = text;
+      area.setAttribute('readonly', '');
+      area.style.position = 'fixed';
+      area.style.top = '-1000px';
+      document.body.appendChild(area);
+      area.select();
+      area.setSelectionRange(0, text.length);   // iOS 대응
+      var okCopy = document.execCommand('copy');
+      document.body.removeChild(area);
+      return okCopy;
+    } catch (e) {
+      return false;
+    }
   }
 
   /** 명단 필터 칩 만들기 */
@@ -353,9 +423,11 @@
     });
   }
 
+  /** 안내 문구를 넣습니다. 원래 붙어 있던 첫 클래스는 그대로 두고 상태만 바꿉니다. */
   function say(el, text, cls) {
     el.textContent = text;
-    el.className = 'form__msg ' + (cls || '');
+    if (!el.dataset.base) el.dataset.base = el.className.split(' ')[0] || '';
+    el.className = el.dataset.base + (cls ? ' ' + cls : '');
   }
 
   function readJson(res) {

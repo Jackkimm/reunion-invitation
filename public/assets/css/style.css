@@ -189,6 +189,26 @@ button,input,textarea{font:inherit;color:inherit;}
 .fees strong{font-weight:700;font-variant-numeric:tabular-nums;}
 .fees[hidden]{display:none;}
 
+/* 계좌 + 복사 버튼 */
+.account{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  margin-top:6px;
+}
+.account[hidden]{display:none;}
+.account__text{font-size:14px;color:var(--ink-soft);}
+.copy{
+  border:1px solid var(--line);background:var(--paper-card,#fff);
+  color:var(--ink);border-radius:999px;
+  padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;
+  transition:.15s;white-space:nowrap;
+}
+.copy:active{transform:scale(.96);}
+.copy.is-done{background:#eaf5f0;border-color:#2e7d5b;color:#2e7d5b;}
+.account__msg{display:block;font-size:12px;margin-top:4px;min-height:0;}
+.account__msg.is-ok{color:#2e7d5b;}
+.account__msg.is-err{color:#a3563f;}
+.account__msg:empty{display:none;}
+
 /* ── 버튼 ───────────────────────────────────────────────── */
 .btn{
   display:flex;align-items:center;justify-content:center;gap:8px;
