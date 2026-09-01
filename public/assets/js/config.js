@@ -54,7 +54,7 @@ window.CONFIG = {
    *   'background' : 히어로 배경 전체에 은은하게 깔립니다
    * heroOverlay : 'background' 일 때 종이색 덮개 진하기 (0 = 원본 그대로, 1 = 안 보임)
    */
-  heroImage: '/assets/img/hero.jpg',
+  heroImage: '/assets/img/hero.png',
   heroImageStyle: 'plate',
   heroOverlay: 0.72,
   heroImageAlt: '이선승지(以善勝之) 서예',
