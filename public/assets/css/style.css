@@ -234,9 +234,11 @@ button,input,textarea{font:inherit;color:inherit;}
 .choices{border:0;padding:0;margin:0;min-width:0;}
 .choices legend{padding:0;}
 .choices__row{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;}
+.choice{display:flex;}              /* 칸 높이를 꽉 채우도록 */
 .choice input{position:absolute;opacity:0;width:0;height:0;}
 .choice__box{
-  display:flex;flex-direction:column;align-items:center;gap:3px;
+  flex:1;                           /* 시간·회비 줄이 없는 "불참" 도 같은 높이 */
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
   padding:14px 6px;border:1.5px solid var(--line);border-radius:14px;
   background:#fcfbf8;font-size:15px;font-weight:700;color:var(--ink-soft);
   cursor:pointer;transition:.18s;text-align:center;
