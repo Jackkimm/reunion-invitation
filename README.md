@@ -4,8 +4,8 @@
 D-day 카운트다운 · 참석 투표(로그인 없음) · 실시간 참석자 명단 · 지도 링크가 들어 있고,
 응답은 **Notion 데이터베이스**에 그대로 쌓입니다.
 
-- **프론트**: 순수 HTML/CSS/JS (빌드 도구 없음, 모바일 우선)
-- **백엔드**: Cloudflare **Pages Functions** (`/functions/api/`) — Notion API 프록시
+- **프론트**: 순수 HTML/CSS/JS (빌드 도구 없음, 모바일 우선) — `public/` 폴더
+- **백엔드**: Cloudflare Functions (`/functions/api/`) — Notion API 프록시
 - **DB**: Notion 데이터베이스 1개
 - **비용**: Cloudflare Pages 무료 플랜 + Notion 무료 플랜으로 충분합니다
 
@@ -18,17 +18,20 @@ D-day 카운트다운 · 참석 투표(로그인 없음) · 실시간 참석자 
 
 ```
 .
-├── index.html              ← 화면 전체 (OG 메타태그도 여기 상단에 있음)
-├── _headers                ← Cloudflare 응답 헤더 설정
-├── assets/
-│   ├── css/style.css       ← 디자인
-│   ├── js/config.js        ← ★ 동창회 내용은 여기만 고치면 됩니다
-│   ├── js/app.js           ← 카운트다운·투표·명단 로직
-│   └── img/                ← og.png (카톡 미리보기 이미지) 넣는 곳
-└── functions/api/
-    ├── _notion.js          ← Notion 공용 코드 (밑줄로 시작 → 주소로 노출 안 됨)
-    ├── attendees.js        ← GET  /api/attendees
-    └── rsvp.js             ← POST /api/rsvp
+├── public/                     ← 이 폴더가 그대로 웹사이트가 됩니다
+│   ├── index.html              ← 화면 전체 (OG 메타태그도 여기 상단에 있음)
+│   ├── _headers                ← 응답 헤더(보안·캐시) 설정
+│   └── assets/
+│       ├── css/style.css       ← 디자인
+│       ├── js/config.js        ← ★ 동창회 내용은 여기만 고치면 됩니다
+│       ├── js/app.js           ← 카운트다운·투표·명단 로직
+│       └── img/                ← og.png (카톡 미리보기 이미지) 넣는 곳
+├── functions/api/
+│   ├── _notion.js              ← Notion 공용 코드 (밑줄로 시작 → 주소로 노출 안 됨)
+│   ├── attendees.js            ← GET  /api/attendees
+│   └── rsvp.js                 ← POST /api/rsvp
+├── src/worker.js               ← Workers 진입점 (/api/* 라우팅 + 정적 파일)
+└── wrangler.jsonc              ← Workers 배포 설정 (프로젝트 이름 확인 필요)
 ```
 
 ---
@@ -42,7 +45,7 @@ D-day 카운트다운 · 참석 투표(로그인 없음) · 실시간 참석자 
 | 3 | 데이터베이스에 인테그레이션 연결 | 1분 |
 | 4 | 데이터베이스 ID 복사 | 2분 |
 | 5 | 이 코드를 내 GitHub 계정으로 가져오기 | 3분 |
-| 6 | Cloudflare Pages에 연결해서 배포 | 5분 |
+| 6 | Cloudflare에 연결해서 배포 | 5분 |
 | 7 | 환경변수(NOTION_TOKEN, NOTION_DB_ID) 등록 후 재배포 | 5분 |
 | 8 | `config.js` 와 OG 태그를 우리 동창회 내용으로 수정 | 5분 |
 
@@ -135,46 +138,81 @@ Notion 앱이 아니라 **사파리**에서 해야 합니다.
 
 ---
 
-## 6단계 · Cloudflare Pages 에 연결해서 배포하기
+## 6단계 · Cloudflare 에 연결해서 배포하기
+
+Cloudflare 대시보드는 Git 저장소를 연결하면 **Workers 프로젝트**로 만들어 줍니다.
+이 저장소는 거기에 맞춰져 있으니 그대로 따라오시면 됩니다.
 
 1. 사파리에서 **https://dash.cloudflare.com** 접속 → 가입/로그인 (무료).
-2. 왼쪽 메뉴 **`Compute(Workers & Pages)`** → **`Create`**(만들기) → 위쪽 탭에서 **`Pages`** 선택.
-3. **`Connect to Git`**(Git에 연결) → **`GitHub`** → GitHub 로그인 및 권한 허용.
+2. 왼쪽 메뉴 **`Compute(Workers & Pages)`** → **`Create`**(만들기).
+3. **`Import a repository`**(저장소 가져오기) → **GitHub** 로그인 및 권한 허용.
    - 저장소 선택 화면에서 `reunion-invitation` 만 골라도 됩니다.
-4. 저장소 목록에서 **`reunion-invitation`** 선택 → **`Begin setup`**.
-5. **빌드 설정(Build settings)** 은 이렇게 둡니다. 👇 **여기가 중요합니다.**
+4. 저장소 목록에서 **`reunion-invitation`** 을 선택합니다.
+5. 설정 화면은 이렇게 둡니다. 👇
 
    | 항목 | 값 |
    |---|---|
-   | Framework preset | **None** (없음) |
+   | Project name | **`reunion-invitation`** (⚠️ 아래 주의사항 참고) |
+   | Branch | 배포할 브랜치 (보통 `main`) |
    | Build command | **비워두기** |
-   | Build output directory | **`/`** (슬래시 하나) |
-   | Root directory | **비워두기** |
+   | Deploy command | **`npx wrangler deploy`** (기본값 그대로) |
+   | Root directory | **`/`** |
 
-   빌드 도구를 쓰지 않는 정적 사이트라 컴파일 과정이 없습니다.
+   > ⚠️ **프로젝트 이름 주의**: 여기서 정한 이름은 저장소의 `wrangler.jsonc` 안
+   > `"name"` 값과 **같아야 합니다.** 기본값 `reunion-invitation` 을 그대로 쓰면 문제없고,
+   > 다른 이름으로 만들었다면 8단계 방법으로 `wrangler.jsonc` 의 `"name"` 을 그 이름으로 고쳐주세요.
 
-6. **`Save and Deploy`** 를 누릅니다. 1~2분 뒤 `https://프로젝트이름.pages.dev` 주소가 나옵니다.
+   > ⚠️ **브랜치 주의**: 아직 작업 브랜치를 `main` 에 합치지 않았다면,
+   > Branch 를 작업 브랜치로 지정하거나 먼저 PR 을 머지하세요.
+   > 안 그러면 `README.md` 만 있는 `main` 이 배포됩니다.
+
+6. **`Deploy`** 를 누릅니다. 1~2분 뒤 `https://프로젝트이름.계정이름.workers.dev` 주소가 나옵니다.
 7. 지금 열어보면 화면은 나오지만 명단 자리에 **"서버 설정이 끝나지 않았습니다"** 라고 보일 겁니다. → 정상입니다. 7단계로!
 
----
+### 이미 만들었는데 배포가 실패했다면
+
+빌드 로그에 이런 오류가 보이는 경우입니다.
+
+```
+Executing user deploy command: npx wrangler deploy
+✘ [ERROR] Could not detect a directory containing static files (e.g. html, css and js)
+```
+
+저장소에 `wrangler.jsonc` 와 `public/` 폴더가 없어서 나는 오류입니다. **지금은 둘 다 들어 있으니**,
+그 커밋이 포함된 브랜치가 배포 대상인지 확인한 뒤 **`Deployments` → `Retry deployment`**(다시 시도)
+또는 **`Create deployment`** 를 누르면 됩니다.
+
+### (다른 방법) Cloudflare Pages 로 배포하고 싶다면
+
+`functions/api/*.js` 는 Pages Functions 규격 그대로라 Pages 로도 배포됩니다.
+
+1. 저장소에서 **`wrangler.jsonc` 파일을 삭제**합니다. (Pages 는 `main` 키가 있는 설정 파일을 거부합니다)
+2. Workers & Pages → Create → **`Pages`** 탭 → Connect to Git → 저장소 선택
+3. 빌드 설정: Framework preset **None**, Build command **비워두기**,
+   **Build output directory `public`**
+4. 주소는 `https://프로젝트이름.pages.dev` 형태가 됩니다.
 
 ## 7단계 · 환경변수 등록하고 다시 배포하기
 
-1. 방금 만든 Pages 프로젝트 → **`Settings`**(설정) → **`Variables and Secrets`**
+1. 방금 만든 프로젝트 → **`Settings`**(설정) → **`Variables and Secrets`**
    (예전 화면에서는 `Environment variables`).
-2. **`+ Add`** 를 눌러 두 개를 넣습니다. **환경(Environment)은 `Production` 을 선택**하세요.
+2. **`+ Add`** 를 눌러 두 개를 넣습니다.
 
    | 이름(Variable name) | 종류 | 값 |
    |---|---|---|
-   | `NOTION_TOKEN` | **Secret**(암호화) 권장 | 2단계에서 복사한 `ntn_...` 토큰 |
-   | `NOTION_DB_ID` | Text | 4단계에서 복사한 DB ID(또는 노션 링크 전체) |
+   | `NOTION_TOKEN` | **Secret** | 2단계에서 복사한 `ntn_...` 토큰 |
+   | `NOTION_DB_ID` | **Secret** | 4단계에서 복사한 DB ID(또는 노션 링크 전체) |
+
+   > 💡 **둘 다 `Secret` 으로 넣으세요.** 일반 Text 로 넣으면 다음 배포 때
+   > `wrangler deploy` 가 설정 파일 기준으로 덮어써서 값이 사라질 수 있습니다.
+   > (Secret 은 배포와 상관없이 그대로 유지됩니다)
 
    > 선택 사항: 1단계에서 속성 이름을 다르게 지었다면 아래도 함께 넣으세요.
    > `NOTION_PROP_NAME`(기본 `이름`) · `NOTION_PROP_STATUS`(기본 `참석여부`) · `NOTION_PROP_MESSAGE`(기본 `한마디`)
 
 3. **`Save`** 를 누릅니다.
 4. ⚠️ **환경변수는 저장만 해서는 반영되지 않습니다. 반드시 다시 배포하세요.**
-   **`Deployments`** 탭 → 맨 위 배포의 **`•••`** → **`Retry deployment`**(재시도) 를 누릅니다.
+   **`Deployments`** 탭 → 맨 위 배포의 **`•••`** → **`Retry deployment`**(다시 시도) 를 누릅니다.
 5. 1분쯤 뒤 사이트를 새로고침하고, 이름을 넣어 **참석 투표를 눌러보세요.**
    노션 표에 행이 새로 생기면 **성공입니다!** 🎉
 
@@ -187,7 +225,7 @@ Notion 앱이 아니라 **사파리**에서 해야 합니다.
 
 ### (1) 초대장 내용 — `assets/js/config.js`
 
-1. GitHub 저장소 → `assets` → `js` → **`config.js`** 를 누릅니다.
+1. GitHub 저장소 → `public` → `assets` → `js` → **`config.js`** 를 누릅니다.
 2. 오른쪽 위 **연필(✏️) 아이콘** → 내용을 고칩니다.
 3. 아래로 내려 **`Commit changes`** → **`Commit changes`** 를 누릅니다.
 
@@ -210,23 +248,23 @@ Notion 앱이 아니라 **사파리**에서 해야 합니다.
 - 네이버지도: 장소 검색 → **공유** → **URL 복사** → `naverMapUrl` 에 붙여넣기
 - 링크를 `''` (빈 따옴표) 로 두면 그 버튼은 자동으로 숨겨집니다.
 
-### (2) 카카오톡 미리보기 — `index.html` 상단 OG 태그
+### (2) 카카오톡 미리보기 — `public/index.html` 상단 OG 태그
 
-`index.html` 을 열면 위쪽에 주석으로 표시된 부분이 있습니다. 5줄만 고치면 됩니다.
+`public/index.html` 을 열면 위쪽에 주석으로 표시된 부분이 있습니다. 5줄만 고치면 됩니다.
 
 ```html
 <title>제12회 한빛고 총동창회 초대장</title>
 <meta name="description" content="...">
 <meta property="og:title" content="제12회 한빛고 총동창회에 초대합니다">
 <meta property="og:description" content="2026년 11월 14일 (토) 오후 6시 · 그랜드컨벤션 3층">
-<meta property="og:image" content="https://내주소.pages.dev/assets/img/og.png">
-<meta property="og:url" content="https://내주소.pages.dev">
+<meta property="og:image" content="https://내주소.workers.dev/assets/img/og.png">
+<meta property="og:url" content="https://내주소.workers.dev">
 ```
 
 - `og:url` 과 `og:image` 는 **반드시 `https://` 로 시작하는 전체 주소**여야 합니다.
-  6단계에서 받은 `*.pages.dev` 주소를 넣으세요.
+  6단계에서 받은 실제 주소(`*.workers.dev` 또는 `*.pages.dev`)를 넣으세요.
 - **미리보기 이미지 올리는 법**: 아이패드에서 **1200×630** 크기 이미지를 만들고(캔바 등)
-  GitHub 저장소 → `assets` → `img` 폴더 → **`Add file` → `Upload files`** 로 **`og.png`** 라는 이름으로 올립니다.
+  GitHub 저장소 → `public` → `assets` → `img` 폴더 → **`Add file` → `Upload files`** 로 **`og.png`** 라는 이름으로 올립니다.
 - 카톡에 한 번 공유한 링크는 미리보기가 캐시됩니다. 바꾼 뒤에도 예전 화면이 보이면
   **카카오 공유 디버거**(https://developers.kakao.com/tool/debugger/sharing) 에서 주소를 넣고 **초기화**하세요.
 
@@ -285,6 +323,9 @@ Notion 앱이 아니라 **사파리**에서 해야 합니다.
 | **Notion DB 속성 이름이 다릅니다** | 표의 열 이름이 `이름`/`참석여부`/`한마디` 인지, 종류가 제목/선택/텍스트인지 확인하세요. |
 | **요청이 잠시 많습니다** | Notion API 속도 제한입니다. 몇 초 뒤 새로고침하면 됩니다. |
 | 명단은 되는데 **투표만 안 됨** | 인테그레이션 권한 문제입니다. 3단계에서 연결을 지웠다가 다시 추가해 보세요. |
+| **Could not detect a directory containing static files** | 배포 대상 브랜치에 `wrangler.jsonc` 와 `public/` 폴더가 없습니다. 브랜치 설정을 확인하고 다시 배포하세요. (6단계 아래 "이미 만들었는데 배포가 실패했다면") |
+| **Worker 이름이 다르다는 오류 / 엉뚱한 주소로 배포됨** | `wrangler.jsonc` 의 `"name"` 을 대시보드의 프로젝트 이름과 똑같이 맞추세요. |
+| **잘 되다가 갑자기 "서버 설정이 끝나지 않았습니다"** | 환경변수를 Text 로 넣어서 재배포 때 지워졌을 수 있습니다. **Secret** 으로 다시 등록하세요. |
 | **화면이 아예 안 바뀜** | Cloudflare 배포가 끝났는지 `Deployments` 탭에서 확인하고, 사파리에서 새로고침을 길게 눌러 강력 새로고침 하세요. |
 
 배포 로그는 Cloudflare **`Deployments` → 해당 배포 → `Functions` 로그**에서 볼 수 있습니다.
@@ -296,13 +337,13 @@ Notion 앱이 아니라 **사파리**에서 해야 합니다.
 아이패드만 쓴다면 필요 없습니다.
 
 ```bash
-npm install -g wrangler
 # 토큰은 .dev.vars 파일에 적습니다 (git에 올라가지 않습니다)
 printf 'NOTION_TOKEN=ntn_xxx\nNOTION_DB_ID=xxxx\n' > .dev.vars
-wrangler pages dev .
+npx wrangler dev
 ```
 
-브라우저에서 `http://localhost:8788` 로 접속합니다.
+브라우저에서 `http://localhost:8787` 로 접속합니다.
+배포 전에 설정만 점검하려면 `npx wrangler deploy --dry-run` 을 쓰세요.
 
 ---
 

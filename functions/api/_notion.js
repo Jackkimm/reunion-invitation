@@ -26,7 +26,7 @@ export function readEnv(env) {
 
   if (!token || !dbId) {
     throw new HttpError(500,
-      '서버 설정이 끝나지 않았습니다. Cloudflare Pages 환경변수에 NOTION_TOKEN 과 NOTION_DB_ID 를 등록한 뒤 재배포해 주세요.');
+      '서버 설정이 끝나지 않았습니다. Cloudflare 대시보드 → Settings → Variables and Secrets 에 NOTION_TOKEN 과 NOTION_DB_ID 를 등록한 뒤 다시 배포해 주세요.');
   }
 
   return {
