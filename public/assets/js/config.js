@@ -130,7 +130,7 @@ window.CONFIG = {
     rsvpDesc: '로그인 없이 이름만 적으면 됩니다. 같은 이름으로 다시 보내면 답변이 수정돼요.',
     errStatusPick: '어느 순서부터 오실지 골라주세요.',
     nameLabel: '이름',
-    namePlaceholder: '예) 김제균 (3반)',
+    namePlaceholder: '예) 홍길동 (3반)',
     statusLabel: '어느 순서부터 오시나요?',
     stageSummary: '시간대별 예상 인원',
     stageFootball: '축구',

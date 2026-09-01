@@ -302,9 +302,8 @@
       $('msgCount').textContent = messageEl.value.length;
     });
 
-    // 예전에 응답한 이름을 기억해 두었다가 다시 채워줍니다.
-    var saved = safeGet(ME_KEY);
-    if (saved) $('name').value = saved;
+    // 예전에 응답한 이름은 명단에서 "나" 를 표시하는 데만 쓰고,
+    // 입력칸은 비워 둡니다. (이미 적혀 있으면 남의 응답을 덮어쓸 수 있어서)
 
     // 투표 마감 처리
     if (CFG.rsvpDeadline) {
