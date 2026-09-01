@@ -323,7 +323,9 @@ button,input,textarea{font:inherit;color:inherit;}
 @keyframes pop{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
 @keyframes shimmer{from{background-position:200% 0;}to{background-position:-200% 0;}}
 @media (prefers-reduced-motion:reduce){
-  *{animation:none!important;transition:none!important;scroll-behavior:auto;}
+  *{animation:none!important;transition:none!important;}
+  /* html 선택자가 * 보다 우선하므로 !important 로 확실히 꺼줍니다 */
+  html{scroll-behavior:auto!important;}
 }
 
 /* ── 태블릿 이상 ─────────────────────────────────────────── */

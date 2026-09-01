@@ -9,6 +9,34 @@
   var UI = CFG.ui || {};
   var $ = function (id) { return document.getElementById(id); };
 
+  /**
+   * 초대장은 언제나 맨 위(서예)부터 보이게 합니다.
+   * 참석 투표 버튼을 누르면 주소 끝에 #rsvp 가 붙는데, 그 주소를 그대로
+   * 단톡방에 공유하면 받는 사람은 투표 화면부터 열리게 됩니다.
+   * 브라우저가 이전 위치를 기억해 두었다가 복원하는 경우도 막습니다.
+   */
+  function startAtTop() {
+    try {
+      if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    } catch (e) { /* 무시 */ }
+
+    if (window.location.hash) {
+      try {
+        history.replaceState(null, '', window.location.pathname + window.location.search);
+      } catch (e) { /* 무시 */ }
+    }
+
+    // 부드러운 스크롤이 켜져 있어 잠시 껐다가 맨 위로 보냅니다.
+    var root = document.documentElement;
+    var before = root.style.scrollBehavior;
+    root.style.scrollBehavior = 'auto';
+    window.scrollTo(0, 0);
+    setTimeout(function () {          // 사파리가 뒤늦게 복원하는 경우 대비
+      window.scrollTo(0, 0);
+      root.style.scrollBehavior = before;
+    }, 0);
+  }
+
   /** config.js 의 ui 문구를 꺼냅니다. 비어 있으면 기본 문구를 씁니다. */
   function T(key, fallback) {
     var v = UI[key];
@@ -474,6 +502,7 @@
   function safeSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* 무시 */ } }
 
   /* ── 실행 ─────────────────────────────────────────────── */
+  startAtTop();
   applyConfig();
   startCountdown();
   setupForm();

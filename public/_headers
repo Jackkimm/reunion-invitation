@@ -4,9 +4,16 @@
   Referrer-Policy: strict-origin-when-cross-origin
   X-Frame-Options: SAMEORIGIN
 
-# config.js 를 고친 뒤 바로 반영되도록 캐시를 짧게 둡니다.
-/assets/*
-  Cache-Control: public, max-age=300
+# config.js 를 고친 뒤 바로 반영되도록 코드 캐시는 짧게 둡니다.
+/assets/js/*
+  Cache-Control: public, max-age=60
+
+/assets/css/*
+  Cache-Control: public, max-age=60
+
+# 이미지는 잘 바뀌지 않으므로 길게 (바꾸면 파일 이름을 바꿔주세요)
+/assets/img/*
+  Cache-Control: public, max-age=86400
 
 /api/*
   Cache-Control: no-store
