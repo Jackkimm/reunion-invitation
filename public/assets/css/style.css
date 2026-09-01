@@ -178,6 +178,17 @@ button,input,textarea{font:inherit;color:inherit;}
   white-space:nowrap;
 }
 
+/* 참석 시점별 회비 */
+.fees{margin:6px 0 4px;display:grid;gap:4px;max-width:260px;}
+.fees li{
+  display:flex;justify-content:space-between;align-items:baseline;gap:12px;
+  font-size:15px;padding:3px 0;border-bottom:1px dashed var(--line);
+}
+.fees li:last-child{border-bottom:0;}
+.fees span{color:var(--ink-soft);font-size:14px;}
+.fees strong{font-weight:700;font-variant-numeric:tabular-nums;}
+.fees[hidden]{display:none;}
+
 /* ── 버튼 ───────────────────────────────────────────────── */
 .btn{
   display:flex;align-items:center;justify-content:center;gap:8px;

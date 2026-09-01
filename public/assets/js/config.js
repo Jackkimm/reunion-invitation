@@ -22,8 +22,11 @@ window.CONFIG = {
   placeAddress: '대전 중구 사정공원로 160',
   placeDetail: '자차',
 
-  /* ── 회비 ─────────────────────────────────── */
-  fee: '5만원',
+  /* ── 회비 ─────────────────────────────────────
+   * 참석 시점마다 금액이 다르면 위 statuses 의 fee 를 쓰고,
+   * 아래 fee 는 비워두세요. (전원 같은 금액이면 반대로 하시면 됩니다)
+   */
+  fee: '',
   feeDetail: '농협 352-10340685-53 (예금주: 김제균)',
 
   /* ── 참석 여부 선택지 ───────────────────────────
@@ -35,10 +38,10 @@ window.CONFIG = {
    * ⚠️ value 를 고치면 functions/api/_notion.js 의 STATUSES 도 같이 고쳐야 합니다.
    */
   statuses: [
-    { value: '축구부터',   label: '축구부터',    time: '15:00~',  emoji: '⚽', counts: true },
-    { value: '저녁부터',   label: '저녁식사부터', time: '19:00~',  emoji: '🍚', counts: true },
-    { value: '뒷풀이부터', label: '뒷풀이부터',   time: '21:30~',  emoji: '🍻', counts: true },
-    { value: '불참',       label: '불참',        time: '',        emoji: '🙇', counts: false }
+    { value: '축구부터',   label: '축구부터',    time: '15:00~',  fee: '5만원', emoji: '⚽', counts: true },
+    { value: '저녁부터',   label: '저녁식사부터', time: '19:00~',  fee: '4만원', emoji: '🍚', counts: true },
+    { value: '뒷풀이부터', label: '뒷풀이부터',   time: '21:30~',  fee: '3만원', emoji: '🍻', counts: true },
+    { value: '불참',       label: '불참',        time: '',        fee: '',      emoji: '🙇', counts: false }
   ],
 
   /* ── 하루 일정 ─────────────────────────────────

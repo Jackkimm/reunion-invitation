@@ -74,6 +74,7 @@
     renderSchedule();
     buildChoices();
     buildFilters();
+    renderFees();
 
     if (Array.isArray(CFG.greeting)) $('greeting').textContent = CFG.greeting.join('\n');
     else if (CFG.greeting) $('greeting').textContent = CFG.greeting;
@@ -123,16 +124,38 @@
 
       box.appendChild(emoji);
       box.appendChild(name);
-      if (s.time) {
+      // 시간과 회비를 한 줄로 (예: "15:00~ · 5만원")
+      var sub = [s.time, s.fee].filter(Boolean).join(' · ');
+      if (sub) {
         var time = document.createElement('span');
         time.className = 'choice__time';
-        time.textContent = s.time;
+        time.textContent = sub;
         box.appendChild(time);
       }
 
       label.appendChild(input);
       label.appendChild(box);
       row.appendChild(label);
+    });
+  }
+
+  /** 참석 시점별 회비. statuses 에 fee 가 하나도 없으면 아무것도 그리지 않습니다. */
+  function renderFees() {
+    var rows = STATUSES.filter(function (s) { return s.counts && s.fee; });
+    var list = $('fees');
+    if (!list) return;
+    if (!rows.length) { list.hidden = true; return; }
+
+    list.innerHTML = '';
+    rows.forEach(function (s) {
+      var li = document.createElement('li');
+      var name = document.createElement('span');
+      name.textContent = s.label || s.value;
+      var amount = document.createElement('strong');
+      amount.textContent = s.fee;
+      li.appendChild(name);
+      li.appendChild(amount);
+      list.appendChild(li);
     });
   }
 
