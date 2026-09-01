@@ -6,7 +6,14 @@
   'use strict';
 
   var CFG = window.CONFIG || {};
+  var UI = CFG.ui || {};
   var $ = function (id) { return document.getElementById(id); };
+
+  /** config.js 의 ui 문구를 꺼냅니다. 비어 있으면 기본 문구를 씁니다. */
+  function T(key, fallback) {
+    var v = UI[key];
+    return (typeof v === 'string' && v.trim()) ? v : fallback;
+  }
   var STATUSES = ['참석', '불참', '미정'];
   var ME_KEY = 'reunion:myName';
 
@@ -17,6 +24,16 @@
       if (val) el.textContent = val; else el.hidden = true;
     });
 
+    // 버튼·안내문 같은 고정 문구 (config.js 의 ui 항목)
+    document.querySelectorAll('[data-ui]').forEach(function (el) {
+      el.textContent = T(el.dataset.ui, el.textContent);
+    });
+    document.querySelectorAll('[data-ui-ph]').forEach(function (el) {
+      el.placeholder = T(el.dataset.uiPh, el.placeholder);
+    });
+
+    applyHeroImage();
+
     if (Array.isArray(CFG.greeting)) $('greeting').textContent = CFG.greeting.join('\n');
     else if (CFG.greeting) $('greeting').textContent = CFG.greeting;
 
@@ -26,7 +43,8 @@
     var call = $('contactCall');
     if (CFG.contactPhone) {
       call.href = 'tel:' + CFG.contactPhone.replace(/[^0-9+]/g, '');
-      $('contactLabel').textContent = (CFG.contactName ? CFG.contactName + ' ' : '') + '문의하기';
+      $('contactLabel').textContent =
+        (CFG.contactName ? CFG.contactName + ' ' : '') + T('callBtn', '문의하기');
     } else {
       call.hidden = true;
     }
@@ -34,6 +52,33 @@
 
   function linkOrHide(el, url) {
     if (url) el.href = url; else el.hidden = true;
+  }
+
+  /**
+   * 히어로 이미지.
+   *  plate      → 한 장으로 또렷하게 보여줍니다
+   *  background → 히어로 배경에 깔고 종이색 덮개를 씌웁니다
+   * 이미지 파일이 없으면(404) 자동으로 감춰서 빈 자리가 생기지 않게 합니다.
+   */
+  function applyHeroImage() {
+    var src = CFG.heroImage;
+    if (!src) return;
+
+    var hero = document.querySelector('.hero');
+    if (CFG.heroImageStyle === 'background') {
+      hero.classList.add('hero--bg');
+      hero.style.setProperty('--hero-img', 'url("' + src + '")');
+      var wash = Number(CFG.heroOverlay);
+      if (wash >= 0 && wash <= 1) hero.style.setProperty('--hero-wash', wash);
+      return;
+    }
+
+    var plate = $('heroPlate');
+    var img = $('heroImg');
+    img.alt = CFG.heroImageAlt || '';
+    img.onload = function () { plate.hidden = false; };
+    img.onerror = function () { plate.remove(); };
+    img.src = src;
   }
 
   /* ── 2. D-day 카운트다운 ──────────────────────────────── */
@@ -49,9 +94,12 @@
         // 모임 당일 이후: 시계를 숨기고 문구만 바꿉니다.
         var passedDays = Math.floor(-diff / 86400000);
         box.classList.add(passedDays === 0 ? 'is-today' : 'is-past');
-        $('ddayBig').textContent = passedDays === 0 ? '오늘 만나요!' : '함께해 주셔서 고맙습니다';
-        $('dday').querySelector('.dday__label').textContent =
-          passedDays === 0 ? '드디어' : '동창회가 끝났습니다';
+        $('ddayBig').textContent = passedDays === 0
+          ? T('ddayToday', '오늘 만나요!')
+          : T('ddayPast', '함께해 주셔서 고맙습니다');
+        $('dday').querySelector('.dday__label').textContent = passedDays === 0
+          ? T('ddayTodayLabel', '드디어')
+          : T('ddayPastLabel', '동창회가 끝났습니다');
         return;
       }
 
@@ -93,7 +141,7 @@
       var due = new Date(CFG.rsvpDeadline);
       if (!isNaN(due.getTime()) && Date.now() > due.getTime()) {
         form.querySelectorAll('input,textarea,button').forEach(function (el) { el.disabled = true; });
-        say(msg, '참석 투표가 마감되었습니다. 변경이 필요하면 총무에게 연락해 주세요.', 'is-err');
+        say(msg, T('closed', '참석 투표가 마감되었습니다.'), 'is-err');
         return;
       }
     }
@@ -105,11 +153,11 @@
       var checked = form.querySelector('input[name="status"]:checked');
       var message = messageEl.value.trim();
 
-      if (name.length < 1) { say(msg, '이름을 입력해 주세요.', 'is-err'); $('name').focus(); return; }
-      if (!checked) { say(msg, '참석 여부를 선택해 주세요.', 'is-err'); return; }
+      if (name.length < 1) { say(msg, T('errName', '이름을 입력해 주세요.'), 'is-err'); $('name').focus(); return; }
+      if (!checked) { say(msg, T('errStatus', '참석 여부를 선택해 주세요.'), 'is-err'); return; }
 
       btn.disabled = true;
-      btn.textContent = '보내는 중…';
+      btn.textContent = T('submitting', '보내는 중…');
       say(msg, '', '');
 
       fetch('/api/rsvp', {
@@ -122,16 +170,16 @@
           if (!data.ok) throw new Error(data.error || '저장에 실패했습니다.');
           safeSet(ME_KEY, name);
           say(msg, data.updated
-            ? '응답을 수정했습니다. 고마워요!'
-            : '참석 여부를 보냈습니다. 고마워요!', 'is-ok');
+            ? T('okUpdate', '응답을 수정했습니다. 고마워요!')
+            : T('okNew', '참석 여부를 보냈습니다. 고마워요!'), 'is-ok');
           loadAttendees();
         })
         .catch(function (err) {
-          say(msg, err.message || '전송 중 문제가 생겼습니다. 잠시 후 다시 시도해 주세요.', 'is-err');
+          say(msg, err.message || T('errSend', '전송 중 문제가 생겼습니다.'), 'is-err');
         })
         .then(function () {
           btn.disabled = false;
-          btn.textContent = '보내기';
+          btn.textContent = T('submit', '보내기');
         });
     });
   }
@@ -161,7 +209,7 @@
         state.list = data.attendees || [];
         renderCounts(data.counts || {});
         renderList();
-        $('listUpdated').textContent = '마지막 업데이트 ' + timeText(new Date());
+        $('listUpdated').textContent = T('updatedPrefix', '마지막 업데이트') + ' ' + timeText(new Date());
       })
       .catch(function (err) {
         $('people').innerHTML = '';
@@ -189,8 +237,8 @@
     $('listEmpty').hidden = rows.length > 0;
     if (!rows.length) {
       $('listEmpty').textContent = state.filter === '전체'
-        ? '아직 응답이 없어요. 첫 번째 주인공이 되어주세요!'
-        : '해당하는 분이 아직 없습니다.';
+        ? T('empty', '아직 응답이 없어요. 첫 번째 주인공이 되어주세요!')
+        : T('emptyFiltered', '해당하는 분이 아직 없습니다.');
       return;
     }
 
@@ -217,7 +265,7 @@
       if (me && me === p.name) {
         var mine = document.createElement('span');
         mine.className = 'person__me';
-        mine.textContent = '나';
+        mine.textContent = T('meBadge', '나');
         top.appendChild(mine);
       }
       body.appendChild(top);

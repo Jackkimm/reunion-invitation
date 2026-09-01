@@ -47,6 +47,19 @@ window.CONFIG = {
     '바쁘시더라도 꼭 참석하셔서 자리를 빛내주세요.'
   ],
 
+
+  /* ── 히어로 배경 이미지 ─────────────────────────
+   * public/assets/img/ 에 이미지를 올리고 경로를 적으세요. (없으면 '' 로 두면 됩니다)
+   * heroImageStyle
+   *   'plate'      : 이미지가 또렷하게 한 장으로 보입니다 (기본)
+   *   'background' : 히어로 배경 전체에 은은하게 깔립니다
+   * heroOverlay : 'background' 일 때 종이색 덮개 진하기 (0 = 원본 그대로, 1 = 안 보임)
+   */
+  heroImage: '/assets/img/hero.jpg',
+  heroImageStyle: 'plate',
+  heroOverlay: 0.72,
+  heroImageAlt: '서예 이미지',
+
   /* ── 참석 투표 마감(선택) ───────────────────────
    * 마감일을 지정하면 그 이후에는 투표 버튼이 잠깁니다.
    * 사용하지 않으려면 null 로 두세요.
@@ -54,5 +67,62 @@ window.CONFIG = {
   rsvpDeadline: '2026-11-07T23:59:59+09:00',
 
   /* ── 명단 자동 새로고침 주기(초) ─────────────── */
-  refreshSeconds: 30
+  refreshSeconds: 30,
+
+  /* ═══════════════════════════════════════════════
+   * 화면에 나오는 나머지 문구들
+   * 여기 있는 값만 바꾸면 버튼·안내문까지 전부 바뀝니다.
+   * (지우거나 비워두면 아래 적힌 기본 문구가 그대로 나옵니다)
+   * ═══════════════════════════════════════════════ */
+  ui: {
+    /* 히어로 */
+    ddayLabel: '동창회까지',
+    heroCta: '참석 여부 알려주기 ↓',
+    ddayTodayLabel: '드디어',
+    ddayToday: '오늘 만나요!',
+    ddayPastLabel: '동창회가 끝났습니다',
+    ddayPast: '함께해 주셔서 고맙습니다',
+
+    /* 모임 안내 */
+    infoTitle: '모임 안내',
+    labelDate: '일시',
+    labelPlace: '장소',
+    labelFee: '회비',
+    kakaoBtn: '카카오맵에서 보기',
+    naverBtn: '네이버지도에서 보기',
+    callBtn: '문의하기',            // 앞에 contactName 이 자동으로 붙습니다
+
+    /* 참석 투표 */
+    rsvpTitle: '참석 투표',
+    rsvpDesc: '로그인 없이 이름만 적으면 됩니다. 같은 이름으로 다시 보내면 답변이 수정돼요.',
+    nameLabel: '이름',
+    namePlaceholder: '예) 김한빛 (3반)',
+    statusLabel: '참석 여부',
+    messageLabel: '한마디',
+    messageOptional: '(선택)',
+    messagePlaceholder: '다들 보고싶다! 늦게라도 갈게~',
+    submit: '보내기',
+    submitting: '보내는 중…',
+    okNew: '참석 여부를 보냈습니다. 고마워요!',
+    okUpdate: '응답을 수정했습니다. 고마워요!',
+    errName: '이름을 입력해 주세요.',
+    errStatus: '참석 여부를 선택해 주세요.',
+    errSend: '전송 중 문제가 생겼습니다. 잠시 후 다시 시도해 주세요.',
+    closed: '참석 투표가 마감되었습니다. 변경이 필요하면 총무에게 연락해 주세요.',
+
+    /* 참석자 명단 */
+    listTitle: '참석자 명단',
+    filterAll: '전체',
+    refresh: '↻ 새로고침',
+    empty: '아직 응답이 없어요. 첫 번째 주인공이 되어주세요!',
+    emptyFiltered: '해당하는 분이 아직 없습니다.',
+    updatedPrefix: '마지막 업데이트',
+    meBadge: '나',
+
+    /* 맨 아래 */
+    footerNote: '이 초대장은 참석 집계 용도로만 사용되며, 남기신 이름과 한마디는 명단에 공개됩니다.'
+
+    /* ⚠️ "참석 / 불참 / 미정" 세 글자는 노션 DB 값과 연결되어 있어
+     *    여기서 바꿀 수 없습니다. 바꾸려면 노션 선택 옵션도 함께 바꿔야 합니다. */
+  }
 };
