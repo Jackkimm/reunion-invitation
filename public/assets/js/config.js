@@ -47,8 +47,8 @@ window.CONFIG = {
    * ⚠️ value 를 고치면 functions/api/_notion.js 의 STATUSES 도 같이 고쳐야 합니다.
    */
   statuses: [
-    { value: '축구부터',   label: '축구부터',    time: '15:00~',  fee: '5만원', emoji: '⚽', counts: true },
-    { value: '저녁부터',   label: '저녁식사부터', time: '19:00~',  fee: '4만원', emoji: '🍚', counts: true },
+    { value: '축구부터',   label: '축구부터',    time: '14:00~',  fee: '5만원', emoji: '⚽', counts: true },
+    { value: '저녁부터',   label: '저녁식사부터', time: '18:00~',  fee: '4만원', emoji: '🍚', counts: true },
     { value: '뒷풀이부터', label: '뒷풀이부터',   time: '21:30~',  fee: '3만원', emoji: '🍻', counts: true },
     { value: '불참',       label: '불참',        time: '',        fee: '',      emoji: '🙇', counts: false }
   ],
@@ -59,11 +59,10 @@ window.CONFIG = {
    * 통째로 지우거나 [] 로 두면 일정 섹션이 화면에서 사라집니다.
    */
   schedule: [
-    { time: '14:00 ~ 15:00', title: '도안호수풋살파크 집결' },
-    { time: '15:00 ~ 17:00', title: '대동 풋살' },
-    { time: '17:00 ~ 19:00', title: '이동 및 샤워' },
-    { time: '19:00 ~ 21:30', title: '동창회 1부', note: '장소 추후 공지' },
-    { time: '21:30 ~',       title: '동창회 2부', note: '자율 참석' }
+    { time: '14:00 ~ 16:00', title: '도안호수풋살파크 집결/풋살' },
+    { time: '16:00 ~ 17:30', title: '이동 및 샤워' },
+    { time: '18:00 ~ 21:30', title: '동창회 1부', note: '무릉회관 본점 (예정)' },
+    { time: '21:30 ~',       title: '동창회 2부', note: '2차' }
   ],
 
   /* ── 지도 링크 ─────────────────────────────────
