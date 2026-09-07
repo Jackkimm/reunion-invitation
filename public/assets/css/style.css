@@ -254,6 +254,7 @@ button,input,textarea{font:inherit;color:inherit;}
 .choices{border:0;padding:0;margin:0;min-width:0;}
 .choices legend{padding:0;}
 .choices__row{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;}
+.choices__row[data-count="3"]{grid-template-columns:repeat(3,1fr);}
 .choice{display:flex;}              /* 칸 높이를 꽉 채우도록 */
 .choice input{position:absolute;opacity:0;width:0;height:0;}
 .choice__box{
@@ -285,6 +286,7 @@ button,input,textarea{font:inherit;color:inherit;}
 
 /* ── 명단 ───────────────────────────────────────────────── */
 .counts{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:22px 0 10px;}
+.counts[data-count="3"]{grid-template-columns:repeat(3,1fr);}
 .count{
   background:var(--paper-card,#fff);border:1px solid var(--line);border-radius:14px;
   padding:13px 6px;text-align:center;box-shadow:var(--shadow);
@@ -367,7 +369,7 @@ button,input,textarea{font:inherit;color:inherit;}
   .hero--bg{background-size:cover;}
   .section{padding:60px 24px;}
   .maps{grid-template-columns:repeat(3,1fr);}
-  .choices__row{grid-template-columns:repeat(4,1fr);}
-  .counts{grid-template-columns:repeat(4,1fr);}
+  .choices__row[data-count="4"]{grid-template-columns:repeat(4,1fr);}
+  .counts[data-count="4"]{grid-template-columns:repeat(4,1fr);}
   .people{grid-template-columns:1fr 1fr;}
 }

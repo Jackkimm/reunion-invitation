@@ -49,7 +49,6 @@ window.CONFIG = {
   statuses: [
     { value: '축구부터',   label: '축구부터',    time: '14:00~',  fee: '5만원', emoji: '⚽', counts: true },
     { value: '저녁부터',   label: '저녁식사부터', time: '18:00~',  fee: '4만원', emoji: '🍚', counts: true },
-    { value: '뒷풀이부터', label: '뒷풀이부터',   time: '21:30~',  fee: '3만원', emoji: '🍻', counts: true },
     { value: '불참',       label: '불참',        time: '',        fee: '',      emoji: '🙇', counts: false }
   ],
 

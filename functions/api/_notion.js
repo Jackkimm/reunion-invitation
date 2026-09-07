@@ -19,7 +19,7 @@ export const NOTION_VERSION = '2022-06-28';
  * ⚠️ public/assets/js/config.js 의 statuses[].value 와 똑같이 맞춰야 합니다.
  * 이 목록에 없는 값이 노션에 들어 있으면(예전 응답 등) 화면에는 "기타" 로 보입니다.
  */
-export const STATUSES = ['축구부터', '저녁부터', '뒷풀이부터', '불참'];
+export const STATUSES = ['축구부터', '저녁부터', '불참'];
 export const STATUS_OTHER = '기타';
 
 export const MAX_NAME = 30;

@@ -101,6 +101,7 @@
   function buildChoices() {
     var row = $('statusRow');
     row.innerHTML = '';
+    row.dataset.count = STATUSES.length;   // 개수에 맞춰 칸이 나뉩니다(CSS)
     STATUSES.forEach(function (s, i) {
       var label = document.createElement('label');
       label.className = 'choice';
@@ -481,6 +482,8 @@
 
     var shown = STATUSES.slice();
     if (counts[OTHER]) shown.push({ value: OTHER, label: T('statusOther', OTHER), idx: -1 });
+
+    wrap.dataset.count = shown.length;
 
     shown.forEach(function (s) {
       var li = document.createElement('li');
