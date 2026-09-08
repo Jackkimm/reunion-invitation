@@ -281,14 +281,46 @@
       var title = document.createElement('p');
       title.className = 'tl__title';
       title.textContent = row.title || '';
-      if (row.note) {
+
+      // 장소 이름이 있으면 제목 옆에, 없으면 note 를 붙입니다
+      var badge = row.place || row.note;
+      if (badge) {
         var note = document.createElement('em');
         note.className = 'tl__note';
-        note.textContent = row.note;
+        note.textContent = badge;
         title.appendChild(document.createTextNode(' '));
         title.appendChild(note);
       }
       li.appendChild(title);
+
+      if (row.address) {
+        var addr = document.createElement('p');
+        addr.className = 'tl__addr';
+        addr.textContent = row.address;
+        li.appendChild(addr);
+      }
+
+      // 그 순서만의 지도 링크
+      var links = [
+        { url: row.kakaoMapUrl, label: T('kakaoBtn', '카카오맵에서 보기'), cls: 'tl__map--kakao' },
+        { url: row.naverMapUrl, label: T('naverBtn', '네이버지도에서 보기'), cls: 'tl__map--naver' }
+      ].filter(function (m) { return m.url; });
+
+      if (links.length) {
+        var maps = document.createElement('p');
+        maps.className = 'tl__maps';
+        links.forEach(function (m) {
+          var a = document.createElement('a');
+          a.className = 'tl__map ' + m.cls;
+          a.href = m.url;
+          a.target = '_blank';
+          a.rel = 'noopener';
+          a.textContent = m.label;
+          maps.appendChild(a);
+        });
+        li.appendChild(maps);
+      }
+
       list.appendChild(li);
     });
 

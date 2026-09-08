@@ -177,6 +177,15 @@ button,input,textarea{font:inherit;color:inherit;}
   background:#f4f1e9;border-radius:999px;padding:2px 8px;
   white-space:nowrap;
 }
+.tl__addr{font-size:13px;color:var(--ink-soft);margin-top:3px;}
+.tl__maps{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+.tl__map{
+  font-size:12px;font-weight:700;text-decoration:none;
+  border:1px solid var(--line);border-radius:999px;padding:5px 11px;
+  white-space:nowrap;
+}
+.tl__map--kakao{background:#fee500;color:#3c1e1e;border-color:#f2d900;}
+.tl__map--naver{background:#03c75a;color:#fff;border-color:#02b351;}
 
 /* 참석 시점별 회비 */
 .fees{margin:6px 0 4px;display:grid;gap:4px;max-width:260px;}
