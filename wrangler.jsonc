@@ -1,0 +1,23 @@
+{
+  // Cloudflare Workers 배포 설정
+  // ⚠️ "name" 은 대시보드에 만들어 둔 Worker 프로젝트 이름과 같아야 합니다.
+  //    (Workers & Pages 목록에 보이는 이름. 다르면 여기를 고쳐주세요)
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "reunion-invitation",
+  "main": "src/worker.js",
+  "compatibility_date": "2025-01-01",
+
+  // public/ 안의 파일이 그대로 웹사이트가 됩니다.
+  // /api/* 가 아닌 주소는 Worker 를 거치지 않고 곧바로 이 파일들이 응답합니다.
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS"
+  },
+
+  "observability": {
+    "enabled": true
+  }
+
+  // NOTION_TOKEN / NOTION_DB_ID 는 여기에 적지 않습니다.
+  // 대시보드 → Settings → Variables and Secrets 에 "Secret" 으로 등록하세요.
+}
